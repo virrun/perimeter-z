@@ -56,6 +56,10 @@ button:disabled{cursor:default}
 .pbar{position:absolute;left:8px;right:8px;bottom:8px;z-index:4;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;padding:8px 10px;background:#0c0e09ee;border:1px solid var(--line);border-left:4px solid var(--hazard);border-radius:3px;pointer-events:none}
 .pbar b{font-family:var(--f-display);font-size:13px;letter-spacing:.04em}
 .pbar .btn{pointer-events:auto;width:auto;padding:7px 12px}
+#sAdmin,#sTut{z-index:9}
+.autoN{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel);border:1px solid var(--line);border-radius:6px;font-size:14px}
+.autoN input{width:22px;height:22px;accent-color:#f5b800;flex:none}
+.autoN b{margin-left:auto;font-family:var(--f-display)}
 .admin-in{width:100%;padding:13px 14px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:inherit;font:inherit;font-size:16px}
 .tut{margin:auto;width:100%;max-width:560px;display:grid;gap:12px}
 .tut h2{margin:0}
@@ -133,7 +137,7 @@ h2{font-size:clamp(28px,8vw,40px);line-height:1}
 .sl{display:grid;gap:1px;min-width:0}
 .sl b{font-size:13px;font-weight:600}
 .sl span{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
-.pips{grid-column:1;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px}
+.pips{grid-column:1;display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:2px}
 .pips i{height:8px;background:#0007;border:1px solid var(--line);border-radius:1px}
 .pips i.on{background:var(--hazard);border-color:var(--hazard)}
 .up{grid-row:1/3;grid-column:2;display:inline-flex;align-items:center;gap:6px;min-width:76px;justify-content:center;padding:10px 12px;border-radius:4px;background:var(--hazard);color:var(--hazard-ink);font-family:var(--f-display);font-size:15px;font-variant-numeric:tabular-nums}
@@ -197,14 +201,14 @@ h2{font-size:clamp(28px,8vw,40px);line-height:1}
       <div class="tape"></div>
       <h2>Админ</h2>
       <div id="admLogin">
-        <p class="tl">Введи пароль, чтобы открыть 4× и бонусные монеты.</p>
+        <p class="tl">Введи пароль, чтобы открыть 4× и бонус 50 000 монет.</p>
         <input id="admPw" type="password" autocomplete="off" placeholder="Пароль" class="admin-in">
         <p class="tl" id="admErr" style="color:#ff7a6a;min-height:1.3em"></p>
         <button class="btn" id="admGo">Войти</button>
       </div>
       <div id="admPanel" hidden>
         <p class="tl">Режим админа включён. Ускорение 4× открыто.</p>
-        <button class="btn" id="admCoins">+500 монет</button>
+        <button class="btn" id="admCoins">+50 000 монет</button>
         <button class="btn ghost" id="admOut">Выйти из админа</button>
       </div>
       <button class="btn ghost" id="admClose">Закрыть</button>
@@ -223,7 +227,7 @@ h2{font-size:clamp(28px,8vw,40px);line-height:1}
         <li><span>💣</span><div><b>Мина (3)</b>Взрывается, когда на неё наступает зомби, и ранит всех рядом. Можно ставить подряд, зажав кнопку.</div></li>
         <li><span>🩹</span><div><b>Аптечка (4)</b>Лечит героя на 45% от максимума здоровья. Нажми, и она сработает сразу.</div></li>
         <li><span>🗑️</span><div><b>Убрать (5)</b>Нажми на турель, стену или мину: она исчезнет, а 70% цены вернётся.</div></li>
-        <li><span>✋</span><div><b>Двигать (6)</b>Нажми на постройку, чтобы взять, и ещё раз, куда поставить. Бесплатно.</div></li>
+        <li><span>✋</span><div><b>Двигать (6)</b>Перетащи постройку пальцем на новое место. Если место занято, она вернётся назад. Бесплатно.</div></li>
         <li><span>⏸</span><div><b>Пауза (пробел)</b>Игра стоит, а строить, убирать и двигать можно.</div></li>
         <li><span>⏩</span><div><b>Скорость 1× / 2× / 4×</b>Ускоряет игру. 4× открывается в магазине.</div></li>
         <li><span>▶▶</span><div><b>Вызвать волну</b>Выпускает всех зомби следующей волны сразу. Если слишком легко, можно не ждать.</div></li>
@@ -298,7 +302,8 @@ h2{font-size:clamp(28px,8vw,40px);line-height:1}
 
 <script>
 /*CORE_START*/
-const WORLD=800,CX=400,CY=400,PR=17,BUILD_R=255,RING=BUILD_R+14,MAXUP=10,TURRET_RANGE=230,HERO_SPD=125;
+const WORLD=800,CX=400,CY=400,PR=17,MAXUP=20,TURRET_RANGE=230,HERO_SPD=125;
+let BUILD_R=255,RING=269;
 const TUNE={hp0:12,int0:1.6,intDecay:0.95,hpGrow:0.07,tierW:0.75,hard:1.09,bossK:11,dpsBase:25,dpsPerLvl:9};
 const rnd=(a,b)=>a+Math.random()*(b-a);
 
@@ -313,7 +318,7 @@ const WEAPONS=[
 const WMAP={};WEAPONS.forEach(w=>{WMAP[w.id]=w;});
 const UPS=[{k:'dmg',name:'Урон'},{k:'rate',name:'Скорострельность'},{k:'mag',name:'Магазин'},{k:'reload',name:'Перезарядка'}];
 const TUPS=[{k:'dmg',name:'Урон турелей'},{k:'rate',name:'Скорострельность'},{k:'range',name:'Дальность'},{k:'hp',name:'Прочность'}];
-const HUPS=[{k:'hp',name:'Здоровье героя'},{k:'armor',name:'Броня'}];
+const HUPS=[{k:'hp',name:'Здоровье героя'},{k:'armor',name:'Броня'},{k:'field',name:'Расширение поля'}];
 const SPEED4_PRICE=500;
 const HATS=[['🎩','Цилиндр',30],['🧢','Кепка',30],['⛑️','Каска',40],['🎀','Бант',40],['🌸','Цветок',45],['👒','Соломенная',50],['🪖','Шлем',60],['🎓','Академик',70],['🎅','Санта',90],['🎃','Тыква',110],['🍕','Пицца',120],['🍄','Гриб',130],['🔥','Огонь',140],['🍩','Пончик',150],['⭐','Звезда',160],['🎧','Наушники',180],['🌈','Радуга',200],['🕶️','Очки',220],['🦄','Единорог',350],['👑','Корона',500]];
 const HEROES=[['😎','Крутой',0],['🤠','Ковбой',60],['🥷','Ниндзя',120],['🤖','Робот',200],['👽','Пришелец',300],['🦸','Супергерой',450],['🧙','Маг',600],['🐱','Кот',800],['🐻','Медведь',1000],['🦊','Лис',1300]];
@@ -334,7 +339,7 @@ const ZONES=[
 
 function defaultSave(){
   const w={};WEAPONS.forEach(x=>{w[x.id]={own:x.id==='pistol',dmg:0,rate:0,mag:0,reload:0};});
-  return {v:2,coins:0,level:1,kills:0,weapon:'pistol',w,tu:{dmg:0,rate:0,range:0,hp:0},hu:{hp:0,armor:0},admin:false,speed4:false,hat:-1,hero:0,enemy:0,ownH:[],ownR:[0],ownE:[0],sound:true};
+  return {v:2,coins:0,level:1,kills:0,weapon:'pistol',w,tu:{dmg:0,rate:0,range:0,hp:0},hu:{hp:0,armor:0,field:0},admin:false,auto:true,speed4:false,hat:-1,hero:0,enemy:0,ownH:[],ownR:[0],ownE:[0],sound:true};
 }
 function normSave(s){
   const d=defaultSave();
@@ -345,8 +350,9 @@ function normSave(s){
   WEAPONS.forEach(x=>{w[x.id]=Object.assign({own:x.id==='pistol',dmg:0,rate:0,mag:0,reload:0},sw[x.id]||{});});
   o.w=w;
   o.tu=Object.assign({dmg:0,rate:0,range:0,hp:0},(s.tu&&typeof s.tu==='object')?s.tu:{});
-  o.hu=Object.assign({hp:0,armor:0},(s.hu&&typeof s.hu==='object')?s.hu:{});
+  o.hu=Object.assign({hp:0,armor:0,field:0},(s.hu&&typeof s.hu==='object')?s.hu:{});
   o.admin=!!s.admin;
+  o.auto=s.auto!==false;
   o.speed4=!!s.speed4||o.admin;
   if(!WMAP[o.weapon]||!o.w[o.weapon].own) o.weapon='pistol';
   ['ownH','ownR','ownE'].forEach(k=>{if(!Array.isArray(o[k])) o[k]=defaultSave()[k];});
@@ -356,26 +362,31 @@ function normSave(s){
   return o;
 }
 
+// уровни 1-10 как раньше, 11-20 растут в 2.5 раза быстрее
+function effL(L){return L<=10?L:10+2.5*(L-10);}
 function weaponStats(w,up){
+  const rl=up.reload<=10?1-0.055*up.reload:0.45-0.03*(up.reload-10);
   return {
-    dmg:w.dmg*(1+0.18*up.dmg),
-    rate:w.rate*(1+0.12*up.rate),
-    mag:Math.round(w.mag*(1+0.2*up.mag)),
-    reload:w.reload*(1-0.055*up.reload),
+    dmg:w.dmg*(1+0.18*effL(up.dmg)),
+    rate:w.rate*(1+0.12*effL(up.rate)),
+    mag:Math.round(w.mag*(1+0.2*effL(up.mag))),
+    reload:w.reload*rl,
     pellets:w.pellets,spread:w.spread,pierce:w.pierce,range:w.range
   };
 }
-function upgradeCost(w,lvl){return Math.round(w.upg*Math.pow(1.36,lvl));}
-function turretUpCost(lvl){return Math.round(14*Math.pow(1.36,lvl));}
-function heroUpCost(lvl){return Math.round(18*Math.pow(1.38,lvl));}
-function heroMaxHp(hu){return Math.round(100*(1+0.2*hu.hp));}
-function heroArmor(hu){return 0.05*hu.armor;}
+function lvlCost(base,lvl,g){return Math.round(base*(lvl<10?Math.pow(g,lvl):Math.pow(g,10)*Math.pow(1.32,lvl-10)));}
+function upgradeCost(w,lvl){return lvlCost(w.upg,lvl,1.36);}
+function turretUpCost(lvl){return lvlCost(14,lvl,1.36);}
+function heroUpCost(lvl){return lvlCost(18,lvl,1.38);}
+function heroMaxHp(hu){return Math.round(100*(1+0.2*effL(hu.hp)));}
+function heroArmor(hu){return hu.armor<=10?0.05*hu.armor:0.5+0.03*(hu.armor-10);}
+function fieldR(l){return 255+5.5*l;}
 function turretStats(st,tu){
   return {
-    dmg:Math.max(8,st.dmg*0.6)*(1+0.25*tu.dmg),
-    cool:0.55/(1+0.12*tu.rate),
-    range:TURRET_RANGE*(1+0.05*tu.range),
-    hpMul:1+0.2*tu.hp
+    dmg:Math.max(8,st.dmg*0.6)*(1+0.25*effL(tu.dmg)),
+    cool:0.55/(1+0.12*effL(tu.rate)),
+    range:TURRET_RANGE*(1+(tu.range<=10?0.05*tu.range:0.5+0.03*(tu.range-10))),
+    hpMul:1+0.2*effL(tu.hp)
   };
 }
 
@@ -403,6 +414,7 @@ function levelCfg(n){
 }
 
 function createRun(save,level,carry){
+  BUILD_R=fieldR(save.hu.field||0);RING=BUILD_R+14;
   const cfg=levelCfg(level),w=WMAP[save.weapon],st=weaponStats(w,save.w[w.id]);
   const run={
     level,cfg,save,t:0,state:'play',
@@ -861,28 +873,39 @@ function build(run,kind,x,y,ang){
   ev(run,'built');
   return {ok:true,why:''};
 }
-function findStruct(run,x,y){
+function findStruct(run,x,y,tol){
+  tol=tol||10;
   let best=null,bd=1e9;
-  for(const o of run.turrets){const d=Math.hypot(o.x-x,o.y-y)-o.r;if(d<10&&d<bd){bd=d;best={kind:'turret',list:run.turrets,obj:o};}}
-  for(const o of run.mines){const d=Math.hypot(o.x-x,o.y-y)-o.r;if(d<10&&d<bd){bd=d;best={kind:'mine',list:run.mines,obj:o};}}
-  for(const o of run.walls){const d=segDist(o,x,y)-o.t;if(d<8&&d<bd){bd=d;best={kind:'wall',list:run.walls,obj:o};}}
+  for(const o of run.turrets){const d=Math.hypot(o.x-x,o.y-y)-o.r;if(d<tol&&d<bd){bd=d;best={kind:'turret',list:run.turrets,obj:o};}}
+  for(const o of run.mines){const d=Math.hypot(o.x-x,o.y-y)-o.r;if(d<tol&&d<bd){bd=d;best={kind:'mine',list:run.mines,obj:o};}}
+  for(const o of run.walls){const d=segDist(o,x,y)-o.t;if(d<tol-2&&d<bd){bd=d;best={kind:'wall',list:run.walls,obj:o};}}
   return best;
 }
+function listOf(run,kind){return kind==='turret'?run.turrets:kind==='wall'?run.walls:run.mines;}
 function detachStruct(f){const i=f.list.indexOf(f.obj);if(i>=0) f.list.splice(i,1);}
 function sellRefund(kind){return Math.round(BUILD[kind].cost*0.7);}
-function sellStruct(run,x,y){
-  const f=findStruct(run,x,y);if(!f) return null;
+function sellStruct(run,x,y,tol){
+  const f=findStruct(run,x,y,tol);if(!f) return null;
   detachStruct(f);
   const r=sellRefund(f.kind);run.save.coins+=r;
   floatTxt(run,f.obj.x,f.obj.y-14,'+'+r,'#f5b800');
   return f;
+}
+function placeStructNear(run,f,x,y,ang){
+  let why=placeStruct(run,f,x,y,ang);
+  if(!why) return '';
+  for(let r=8;r<=48;r+=8) for(let k=0;k<8;k++){
+    const a=k*Math.PI/4;
+    if(!placeStruct(run,f,x+Math.cos(a)*r,y+Math.sin(a)*r,ang)) return '';
+  }
+  return why;
 }
 function placeStruct(run,f,x,y,ang){
   const a=f.kind==='wall'?(ang===undefined?f.obj.a:ang):undefined;
   const why=placeCheck(run,f.kind,x,y,a);
   if(why) return why;
   f.obj.x=x;f.obj.y=y;if(f.kind==='wall') f.obj.a=a;
-  f.list.push(f.obj);
+  listOf(run,f.kind).push(f.obj);
   return '';
 }
 /*CORE_END*/
@@ -904,12 +927,12 @@ function loadSave(){
 let save=loadSave();
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 
-let run=null,mode='menu',paused=false,scale=1,dpr=1,ground=null,groundTheme=-1,buildKind=null,wallRadial=false;
+let run=null,mode='menu',paused=false,scale=1,dpr=1,ground=null,groundTheme=-1,groundKey='',buildKind=null,wallRadial=false;
 let carry=null,gameSpeed=1;
 let selLevel=save.level;
 const ptr={x:CX,y:CY,inside:false,down:false};
-let held=null,wallRadialSet=false;
-function dropHeld(){if(held){held.list.push(held.obj);held=null;}}
+let held=null,wallRadialSet=false,pickAt=null;
+function dropHeld(){if(held&&run){listOf(run,held.kind).push(held.obj);}held=null;pickAt=null;}
 const keys={};
 
 /* ---------- helpers ---------- */
@@ -998,7 +1021,7 @@ const THEMES=[
  {base:'#1d0f12',pad0:'#3e2428',pad1:'#2e1a1e',speck:'rgba(255,120,120,.04)',stain:'rgba(80,0,10,.4)'}
 ];
 function buildGround(theme){
-  groundTheme=theme;
+  groundTheme=theme;groundKey=theme+'|'+Math.round(BUILD_R);
   const T=THEMES[theme];
   const g=document.createElement('canvas');g.width=cv.width;g.height=cv.height;
   const c=g.getContext('2d');c.scale(scale,scale);
@@ -1188,21 +1211,24 @@ function drawWorld(r){
     ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y);
   }
   ctx.globalAlpha=1;
-  if((buildKind==='erase'||buildKind==='move')&&ptr.inside){
+  if(held){
+    // постройка в руке всегда видна: под пальцем, а без касания на старом месте
+    const o=held.obj,isW=held.kind==='wall';
+    const gx=ptr.inside?ptr.x:o.x,gy=ptr.inside?ptr.y:o.y;
+    const why=ptr.inside?placeCheck(r,held.kind,gx,gy,isW?o.a:undefined):'';
+    ctx.fillStyle=why?'rgba(217,69,47,.55)':'rgba(127,224,255,.5)';
+    ctx.strokeStyle='#7fe0ff';ctx.lineWidth=2;
+    if(isW){ctx.save();ctx.translate(gx,gy);ctx.rotate(o.a);capsulePath(o.hl,o.t);ctx.fill();ctx.stroke();ctx.restore();}
+    else{ctx.beginPath();ctx.arc(gx,gy,o.r+2,0,6.2832);ctx.fill();ctx.stroke();}
+    ctx.font='14px "IBM Plex Sans",sans-serif';ctx.fillStyle='#fff';ctx.textAlign='center';
+    ctx.fillText(held.kind==='turret'?'🔫':held.kind==='mine'?'💣':'🧱',gx,gy-(isW?20:o.r+8));
+  } else if(buildKind==='erase'&&ptr.inside||buildKind==='move'&&ptr.inside){
     ctx.lineWidth=2;
-    if(buildKind==='move'&&held){
-      const o=held.obj,a=held.kind==='wall'?o.a:0;
-      const why=placeCheck(r,held.kind,ptr.x,ptr.y,held.kind==='wall'?o.a:undefined);
-      ctx.fillStyle=why?'rgba(217,69,47,.5)':'rgba(127,193,107,.5)';
-      if(held.kind==='wall'){ctx.save();ctx.translate(ptr.x,ptr.y);ctx.rotate(a);capsulePath(44,12);ctx.fill();ctx.restore();}
-      else{ctx.beginPath();ctx.arc(ptr.x,ptr.y,o.r+1,0,6.2832);ctx.fill();}
-    } else {
-      const f=findStruct(r,ptr.x,ptr.y);
-      if(f){
-        ctx.strokeStyle=buildKind==='erase'?'#ff5a4a':'#7fe0ff';
-        if(f.kind==='wall'){ctx.save();ctx.translate(f.obj.x,f.obj.y);ctx.rotate(f.obj.a);capsulePath(f.obj.hl,f.obj.t+3);ctx.stroke();ctx.restore();}
-        else{ctx.beginPath();ctx.arc(f.obj.x,f.obj.y,f.obj.r+4,0,6.2832);ctx.stroke();}
-      }
+    const f=findStruct(r,ptr.x,ptr.y,30);
+    if(f){
+      ctx.strokeStyle=buildKind==='erase'?'#ff5a4a':'#7fe0ff';
+      if(f.kind==='wall'){ctx.save();ctx.translate(f.obj.x,f.obj.y);ctx.rotate(f.obj.a);capsulePath(f.obj.hl,f.obj.t+3);ctx.stroke();ctx.restore();}
+      else{ctx.beginPath();ctx.arc(f.obj.x,f.obj.y,f.obj.r+4,0,6.2832);ctx.stroke();}
     }
   }
   if(buildKind&&buildKind!=='erase'&&buildKind!=='move'&&ptr.inside){
@@ -1223,7 +1249,7 @@ function drawWorld(r){
 }
 function render(){
   const th=currentTheme();
-  if(th!==groundTheme) buildGround(th);
+  if(th+'|'+Math.round(BUILD_R)!==groundKey) buildGround(th);
   ctx.setTransform(1,0,0,1,0,0);
   if(ground) ctx.drawImage(ground,0,0);
   else{ctx.fillStyle='#181d12';ctx.fillRect(0,0,cv.width,cv.height);}
@@ -1301,7 +1327,7 @@ function setPlayUi(on){
   resize();
 }
 function startLevel(n,keep){
-  unlockAudio();
+  clearAuto();unlockAudio();
   selLevel=n;
   run=createRun(save,n,keep?carry:null);carry=null;
   if(gameSpeed===4&&!save.speed4) gameSpeed=1;
@@ -1316,7 +1342,7 @@ function startLevel(n,keep){
   persist();
 }
 function toMenu(){
-  mode='menu';paused=false;run=null;carry=null;buildKind=null;
+  clearAuto();mode='menu';paused=false;run=null;carry=null;buildKind=null;
   setPlayUi(false);showScreen('sMenu');refreshMenu();persist();
 }
 function refreshMenu(){
@@ -1349,6 +1375,19 @@ function hideTut(){
   try{localStorage.setItem('pz-tut','1');}catch(e){}
   if(mode==='play'){paused=tutWasPaused;$('sPause').hidden=!paused;}
 }
+let autoTimer=null,autoLeft=0;
+function clearAuto(){if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}const t=$('autoT');if(t) t.textContent='';}
+function startAuto(){
+  clearAuto();autoLeft=3;
+  const tick=()=>{
+    const cb=$('autoNext');
+    if(mode!=='end'||!cb||!cb.checked){clearAuto();return;}
+    if(autoLeft<=0){clearAuto();startLevel(selLevel,true);return;}
+    $('autoT').textContent='· '+autoLeft+' с';
+    autoLeft--;autoTimer=setTimeout(tick,1000);
+  };
+  tick();
+}
 function finish(){
   dropHeld();
   mode='end';persist();
@@ -1367,11 +1406,14 @@ function finish(){
     +'<div><span>Монет за уровень</span><b><span class="cdot"></span>+'+run.earned+'</b></div>'
     +'<div><span>Всего монет</span><b><span class="cdot"></span>'+save.coins+'</b></div></div>'
     +(win?'<p class="note">'+(keep?'Постройки ('+run.turrets.length+' турелей, '+run.walls.length+' стен, '+run.mines.length+' мин) останутся на следующем уровне. Если уйти в магазин или меню, они пропадут.':'Построек на поле нет.')+'</p>':'<p class="note">Герой погиб, постройки пропали.</p>')
+    +(win?'<label class="autoN"><input type="checkbox" id="autoNext"'+(save.auto?' checked':'')+'> Автопереход на следующий уровень <b id="autoT"></b></label>':'')
     +(win?'<button class="btn" data-end="next">Следующий уровень</button>':'<button class="btn" data-end="again">Ещё раз</button>')
     +'<button class="btn ghost" data-end="shop">Магазин</button>'
     +'<button class="btn ghost" data-end="menu">В меню</button>';
   selLevel=win?Math.min(save.level,run.level+1):run.level;
   showScreen('sEnd');
+  clearAuto();
+  if(win&&save.auto) startAuto();
 }
 function processEvents(){
   for(const e of run.events){
@@ -1413,19 +1455,20 @@ function wpos(e){
 function tryBuild(kind,x,y,quiet){
   if(!run||mode!=='play') return;
   if(kind==='erase'){
-    const f=sellStruct(run,x,y);
+    const f=sellStruct(run,x,y,30);
     if(f) SND.built(); else if(!quiet) say('Тут нечего убирать',1000);
     return;
   }
   if(kind==='move'){
     if(!held){
-      const f=findStruct(run,x,y);
-      if(!f){if(!quiet) say('Нажми на постройку, чтобы взять',1200);return;}
-      detachStruct(f);held=f;SND.built();say('Теперь нажми, куда поставить',1400);
+      const f=findStruct(run,x,y,30);
+      if(!f){if(!quiet) say('Нажми на постройку и перетащи её',1400);return;}
+      detachStruct(f);held=f;pickAt={x,y};SND.built();
+      say('Отпусти там, куда поставить. Или нажми ещё раз в нужном месте',2200);
     } else {
-      const why=placeStruct(run,held,x,y,held.kind==='wall'?(wallRadialSet?wallAngle(x,y,wallRadial):held.obj.a):undefined);
+      const why=placeStructNear(run,held,x,y);
       if(why){if(WHY[why]) say(WHY[why]);}
-      else{held=null;SND.built();}
+      else{held=null;pickAt=null;SND.built();}
     }
     return;
   }
@@ -1463,8 +1506,21 @@ cv.addEventListener('pointermove',e=>{
   else if(!buildKind&&!paused) run.target={x:p.x,y:p.y};
 });
 cv.addEventListener('pointerleave',()=>{ptr.inside=false;});
-window.addEventListener('pointerup',e=>{ptr.down=false;if(e.pointerType==='touch') ptr.inside=false;});
-window.addEventListener('pointercancel',()=>{ptr.down=false;ptr.inside=false;});
+window.addEventListener('pointerup',e=>{
+  const wasDown=ptr.down;ptr.down=false;
+  if(held&&wasDown&&pickAt&&mode==='play'&&run){
+    const p=wpos(e);
+    if(Math.hypot(p.x-pickAt.x,p.y-pickAt.y)>14){
+      const why=placeStructNear(run,held,p.x,p.y);
+      if(why){
+        listOf(run,held.kind).push(held.obj);held=null;pickAt=null;
+        say((WHY[why]||'Здесь занято')+'. Вернул на место',1800);
+      } else {held=null;pickAt=null;SND.built();}
+    }
+  }
+  if(e.pointerType==='touch'&&!held) ptr.inside=false;
+});
+window.addEventListener('pointercancel',()=>{ptr.down=false;ptr.inside=false;dropHeld();pickAt=null;});
 $('build').addEventListener('click',e=>{
   const b=e.target.closest('.bb');if(b) pickBuild(b.dataset.k);
 });
@@ -1533,16 +1589,20 @@ function admView(){
 }
 function admLogin(){
   if(sha256($('admPw').value)===ADMIN_HASH){
-    save.admin=true;save.speed4=true;save.coins+=500;persist();refreshMenu();admView();
+    save.admin=true;save.speed4=true;save.coins+=50000;persist();refreshMenu();admView();
   } else $('admErr').textContent='Неверный пароль';
 }
 $('bAdmin').addEventListener('click',()=>{admView();$('sAdmin').hidden=false;});
 $('admClose').addEventListener('click',()=>{$('sAdmin').hidden=true;});
 $('admGo').addEventListener('click',admLogin);
 $('admPw').addEventListener('keydown',e=>{if(e.key==='Enter') admLogin();});
-$('admCoins').addEventListener('click',()=>{save.coins+=500;persist();refreshMenu();});
+$('admCoins').addEventListener('click',()=>{save.coins+=50000;persist();refreshMenu();});
 $('admOut').addEventListener('click',()=>{save.admin=false;persist();admView();});
+$('endBox').addEventListener('change',e=>{
+  if(e.target&&e.target.id==='autoNext'){save.auto=e.target.checked;persist();if(save.auto) startAuto(); else clearAuto();}
+});
 $('endBox').addEventListener('click',e=>{
+  clearAuto();
   const b=e.target.closest('[data-end]');if(!b) return;
   const a=b.dataset.end;
   if(a==='next') startLevel(selLevel,true);
@@ -1602,9 +1662,10 @@ function turretHTML(){
 function defHTML(){
   const f=(k,l)=>{
     l=Math.min(MAXUP,l);
+    if(k==='field') return Math.round(fieldR(l))+' px';
     return k==='hp'?String(heroMaxHp({hp:l})):'−'+Math.round(heroArmor({armor:l})*100)+'% урона';
   };
-  let h='<div class="wcard"><div class="wh"><div><h3>🛡️ Защита героя</h3><p>Здоровье растёт, броня режет весь урон по герою, в том числе от взрывов. Аптечка лечит 45% от максимума.</p></div></div>';
+  let h='<div class="wcard"><div class="wh"><div><h3>🛡️ Защита героя</h3><p>Здоровье растёт, броня режет весь урон по герою, в том числе от взрывов. Расширение поля увеличивает территорию, где можно строить и ходить. Уровни 11–20 заметно сильнее.</p></div></div>';
   h+=upRows(HUPS,k=>save.hu[k],f,heroUpCost,true);
   return h+'</div>';
 }
@@ -1641,7 +1702,7 @@ function renderShop(){
   const ch2=body.querySelector('.chips');if(ch2) ch2.scrollLeft=cl;
 }
 function openShop(){
-  mode='shop';carry=null;
+  clearAuto();mode='shop';carry=null;
   shopW=save.weapon;
   setPlayUi(false);showScreen('sShop');renderShop();
 }
