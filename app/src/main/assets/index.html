@@ -3,6 +3,7 @@
 <title>Периметр Z</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Russo+One&display=swap">
 <style>
+[hidden]{display:none!important}
 /* Layout: one-screen game cabinet. HUD strip on top, square battlefield, build bar below.
    Menu, shop and result screens are quarantine-notice panels laid over the field.
    Single committed look: dark soil, concrete pad, hazard-tape yellow as the only accent. */
@@ -238,7 +239,7 @@ h2{font-size:clamp(28px,8vw,40px);line-height:1}
     <button class="bb" data-k="wall"><kbd>2</kbd><span class="bi">🧱</span><span class="bn">Стена</span><span class="bc"><i class="cdot"></i><b>14</b></span></button>
     <button class="bb" data-k="mine"><kbd>3</kbd><span class="bi">💣</span><span class="bn">Мина</span><span class="bc"><i class="cdot"></i><b>10</b></span></button>
     <button class="bb" data-k="erase"><kbd>5</kbd><span class="bi">🗑️</span><span class="bn">Убрать</span><span class="bc">+70%</span></button>
-    <button class="bb" data-k="move"><kbd>6</kbd><span class="bi">✋</span><span class="bn">Двигать</span><span class="bc">бесплатно</span></button>
+    <button class="bb" data-k="move"><kbd>6</kbd><span class="bi">✋</span><span class="bn">Двигать</span><span class="bc" style="font-size:10px">даром</span></button>
     <button class="bb" data-k="medkit"><kbd>4</kbd><span class="bi">🩹</span><span class="bn">Аптечка</span><span class="bc"><i class="cdot"></i><b>20</b></span></button>
   </nav>
 
@@ -1269,7 +1270,7 @@ function updateHud(){
   const nb=$('btnNext'),last=run.wave>=run.cfg.W-1;
   const show=run.state==='play'&&(!last||(run.phase==='spawn'&&run.pi<run.plan.length));
   nb.hidden=!show;
-  if(show) setText('btnNext',last?'Вызвать всех зомби ▶▶':'Вызвать след. волну ▶▶');
+  if(show) setText('btnNext',last?'Вызвать всех ▶▶':'След. волна ▶▶');
   for(const b of document.querySelectorAll('.bb')){
     const k=b.dataset.k;
     if(k==='walk'||k==='erase'||k==='move') continue;
